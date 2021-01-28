@@ -55,10 +55,10 @@ function copyUneicomment(commentDiv) {
   var videoTime = document.querySelector('time').cloneNode(true);
 
   children.forEach(child => {
+    p.prepend(videoTime);
     if (child.nodeName === 'A') {
       p.appendChild(child.cloneNode(true));
     } else {
-      p.prepend(videoTime);
       p.append(child.textContent);
     }
   });
