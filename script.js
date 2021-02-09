@@ -74,6 +74,8 @@ function copyUneicomment(commentDiv) {
     p.prepend(videoTime);
     if (child.nodeName === 'A') {
       a.href = escapeHtml(child.href);
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       a.textContent = 'リンクはこちら';
       p.appendChild(a);
     } else {
