@@ -47,9 +47,25 @@ var script = document.createElement('script');
 script.innerText = 'var commentTextArea = document.querySelector("#comment-text-area"); var oldText = null; var _drawLetterSpacing = PIXI.Text.prototype.drawLetterSpacing; PIXI.Text.prototype.drawLetterSpacing = function (text, x, y, isStroke) { _drawLetterSpacing.call(this, text, x, y, isStroke); if (oldText != text) { commentTextArea.value += "\\n" + text; oldText = text; commentTextArea.scrollTop = commentTextArea.scrollHeight; } };';
 document.body.appendChild(script);
 
+// HTML エスケープ
+// via https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
+function escapeHtml(text) {
+  var map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 // 運営コメントのリンクを有効化してコピー
 function copyUneicomment(commentDiv) {
+  var div = document.createElement('div');
   var p = document.createElement('p');
+  var a = document.createElement('a');
   var children = commentDiv.childNodes;
 
   var videoTime = document.querySelector('time').cloneNode(true);
@@ -57,13 +73,16 @@ function copyUneicomment(commentDiv) {
   children.forEach(child => {
     p.prepend(videoTime);
     if (child.nodeName === 'A') {
-      p.appendChild(child.cloneNode(true));
+      a.href = escapeHtml(child.href);
+      a.textContent = 'リンクはこちら';
+      p.appendChild(a);
     } else {
       p.append(child.textContent);
+      div.append(p);
     }
   });
 
-  return p;
+  return div;
 }
 
 // for lesson interaction comment
@@ -83,6 +102,7 @@ function updateCommentIfChange(commentDiv) {
     }
   }
 }
+
 function handleMutations(mutations) {
   var commentDiv = document.querySelector('#root > div > div > div > div > div > div > div > div > div > div');
   if (commentDiv) {
