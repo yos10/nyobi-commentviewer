@@ -21,24 +21,71 @@ if (!uncommeArea) {
   column.prepend(uncommeArea);
 }
 
-// 運コメエリアの CSS
+// 右カラムに運コメをコピーするボタンをつくる
+var copyUncommeButton = document.querySelector('#copy-uncomme-button');
+if (!copyUncommeButton) {
+  var div = document.createElement('div');
+  div.setAttribute('class', 'copy-uncomme-button');
+  copyUncommeButton = document.createElement('button');
+  copyUncommeButton.id = 'copy-uncomme-button';
+  copyUncommeButton.textContent = '運営コメントをクリップボードへコピー';
+  div.appendChild(copyUncommeButton)
+  uncommeArea.after(div);
+}
+
+// 運営コメントをコピー
+function copyUncommeToClipboard() {
+  // var uncommeArea = document.querySelector('#unei-comment-area');
+  var children = uncommeArea.childNodes;
+  var copyText = '';
+  children.forEach(child => {
+    copyText += child.textContent + '\n';
+  });
+  navigator.clipboard.writeText(copyText);
+}
+document.querySelector('#copy-uncomme-button').addEventListener('click', copyUncommeToClipboard);
+
+// 運コメエリアとコピーボタンのCSS
 var style = document.createElement('style');
 style.innerText = `
   #unei-comment-area {
     font-family: sans-serif;
     font-size: 16px;
     background: #fff;
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 0 16px 0;
   }
-  #unei-comment-area > p:first-child {
-    margin-top: 0;
-  }
-  #unei-comment-area > p:last-child {
+  #unei-comment-area > div:last-child > p {
     margin-bottom: 0;
   }
   #unei-comment-area time {
     margin-right: 16px;
+  }
+  .copy-uncomme-button {
+    display: flex;
+    justify-content: center;
+    background: white;
+    margin-bottom:  16px;
+  }
+  #copy-uncomme-button {
+    appearance: none;
+    font-family: sans-serif;
+    font-size: 1.4rem;
+    line-height: 1;
+    box-sizing: border-box;
+    background: rgb(79, 115, 227);
+    border: 1px solid rgb(79, 115, 227);
+    border-radius: 4px;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    padding: 16px 40px;
+    outline: none;
+    width: 320px;
+  }
+  #copy-uncomme-button:hover {
+    border: 1px solid rgb(79, 115, 227);
+    filter: brightness(130%);
   }`
 document.head.appendChild(style);
 
@@ -47,7 +94,7 @@ var script = document.createElement('script');
 script.innerText = 'var commentTextArea = document.querySelector("#comment-text-area"); var oldText = null; var _drawLetterSpacing = PIXI.Text.prototype.drawLetterSpacing; PIXI.Text.prototype.drawLetterSpacing = function (text, x, y, isStroke) { _drawLetterSpacing.call(this, text, x, y, isStroke); if (oldText != text) { commentTextArea.value += "\\n" + text; oldText = text; commentTextArea.scrollTop = commentTextArea.scrollHeight; } };';
 document.body.appendChild(script);
 
-// HTML エスケープ
+// 運営コメントのリンクの XSS に対応するための関数
 // via https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406
 function escapeHtml(text) {
   var map = {
@@ -66,17 +113,22 @@ function copyUneicomment(commentDiv) {
   var div = document.createElement('div');
   var p = document.createElement('p');
   var a = document.createElement('a');
-  var children = commentDiv.childNodes;
-
   var videoTime = document.querySelector('time').cloneNode(true);
+  var children = commentDiv.childNodes;
 
   children.forEach(child => {
     p.prepend(videoTime);
     if (child.nodeName === 'A') {
-      a.href = escapeHtml(child.href);
+      var urlInComment = child.href;
+       // リンク先が http:// か https:// ではじまらない場合、文字列だけ表示
+      if (!urlInComment.match(/^https?:\/\//)) {
+        p.append(urlInComment);
+        return;
+      }
+      a.href = escapeHtml(urlInComment);
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
-      a.textContent = 'リンクはこちら';
+      a.textContent = urlInComment;
       p.appendChild(a);
     } else {
       p.append(child.textContent);
