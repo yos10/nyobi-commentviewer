@@ -11,4 +11,7 @@ N予備校の生放送授業において、コメント一覧を表示するChro
 
 ISC License
 
+---
+表示領域の狭いノートパソコンを使用しているので、見やすいように改造してみました。
+
 ![screenshot](https://user-images.githubusercontent.com/61726023/107729035-0768cb00-6d33-11eb-93f1-fc2dbc405ce5.png)
