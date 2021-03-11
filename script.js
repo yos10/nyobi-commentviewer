@@ -29,7 +29,7 @@ if (!copyUncommeButton) {
   copyUncommeButton = document.createElement('button');
   copyUncommeButton.id = 'copy-uncomme-button';
   copyUncommeButton.textContent = '運営コメントをクリップボードへコピー';
-  div.appendChild(copyUncommeButton)
+  div.appendChild(copyUncommeButton);
   uncommeArea.after(div);
 }
 
@@ -37,10 +37,25 @@ if (!copyUncommeButton) {
 function copyUncommeToClipboard() {
   // var uncommeArea = document.querySelector('#unei-comment-area');
   var children = uncommeArea.childNodes;
-  var copyText = '';
+  var arrayUncomme = [];
   children.forEach(child => {
-    copyText += child.textContent + '\n';
+    var p = child.querySelector('p').textContent;
+    var time = child.querySelector('time').textContent;
+    arrayUncomme.push([p, time]);
   });
+
+  // 動画を巻き戻したときに表示されるコメントが、コピーするとき重複しないように unique な配列をつくる
+  // var arrayUniqueByP = new Map(arrayUncomme);
+  // console.log(Array.from(arrayUniqueByP));
+  // スプレッド構文で書くと以下のようになる
+
+  var arrayUniqueByP = [...new Map(arrayUncomme)];
+
+  // コピー用に整える
+  var copyText = arrayUniqueByP.map(m => {
+    return m = `${m[1]} ${m[0]}\n`;
+  }).join('');
+
   navigator.clipboard.writeText(copyText);
 }
 document.querySelector('#copy-uncomme-button').addEventListener('click', copyUncommeToClipboard);
@@ -54,7 +69,21 @@ style.innerText = `
     background: #fff;
     padding: 0 16px 0;
   }
-  #unei-comment-area > div:last-child > p {
+  .unei-comment {
+    display: flow-root;
+    margin-bottom: 16px;
+  }
+  .unei-comment > time {
+    float: left;
+  }
+  .unei-comment > p {
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+  #unei-comment-area > div:first-child {
+    margin-top: 16px;
+  }
+  #unei-comment-area > div:last-child {
     margin-bottom: 0;
   }
   #unei-comment-area time {
@@ -111,13 +140,14 @@ function escapeHtml(text) {
 // 運営コメントのリンクを有効化してコピー
 function copyUneicomment(commentDiv) {
   var div = document.createElement('div');
+  div.className = 'unei-comment';
   var p = document.createElement('p');
   var a = document.createElement('a');
   var videoTime = document.querySelector('time').cloneNode(true);
   var children = commentDiv.childNodes;
 
   children.forEach(child => {
-    p.prepend(videoTime);
+    div.prepend(videoTime);
     if (child.nodeName === 'A') {
       var urlInComment = child.href;
        // リンク先が http:// か https:// ではじまらない場合、文字列だけ表示
