@@ -40,7 +40,7 @@ const config = {
   subtree: true,
 };
 
-const callback = (mutationsList, observe) => {
+const handleMutations = (mutationsList, observe) => {
   for (const mutation of mutationsList) {
     if (mutation.type === 'childList') {
       updateCommentIfChange(targetNode);
@@ -48,5 +48,5 @@ const callback = (mutationsList, observe) => {
   }
 };
 
-const observer = new MutationObserver(callback);
+const observer = new MutationObserver(handleMutations);
 observer.observe(targetNode, config);
